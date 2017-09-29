@@ -6,7 +6,7 @@ var anExampleMessage = new FixedHeaderMessage()
 	.SetHeaderLength(4)
 	.ParseForMessageLength(header => BitConverter.ToInt32(header, 0));
 
-var client = new ReactiveClient(_ip, _port, anExampleMessage);
+var client = new ReactiveClient("127.0.0.1", 1000, anExampleMessage);
 
 client.WhenMessage
 	.Select(bytes => Encoding.ASCII.GetString(bytes))
