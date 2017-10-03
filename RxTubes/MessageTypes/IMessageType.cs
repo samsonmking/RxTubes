@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RxTubes
+namespace RxTubes.MessageTypes
 {
     public interface IMessageType
     {
