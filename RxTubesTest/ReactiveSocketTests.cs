@@ -65,18 +65,18 @@ namespace RxTubesTest
             var server = new ReactiveListener(localIP, 5000, messageType);
 
             server.Connections
-                .SelectMany(connection => connection.WhenMessage.SelectMany(_ => connection.SendObservableBytes(Encoding.ASCII.GetBytes("pong\r"))))
+                .SelectMany(connection => connection.WhenMessage.SelectMany(_ => connection.SendObservableBytes(Encoding.ASCII.GetBytes("pong"))))
                 .Subscribe();
 
             var client = new ReactiveClient(localIP, 5000, messageType);
-            var whenClientSends = client.SendObservableBytes(Encoding.ASCII.GetBytes("ping\r"))
+            var whenClientSends = client.SendObservableBytes(Encoding.ASCII.GetBytes("ping"))
                 .SelectMany(Observable.Never);
 
             var reply = await whenClientSends.Merge(client.WhenMessage)
-                .Select(bytes => Encoding.ASCII.GetString(bytes))
+                .Select(bytes => Encoding.ASCII.GetString(bytes).Trim())
                 .FirstOrDefaultAsync();
 
-            Assert.AreEqual(reply, "pong\r");
+            Assert.AreEqual(reply, "pong");
         }
     }
 }
