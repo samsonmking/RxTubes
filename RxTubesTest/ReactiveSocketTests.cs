@@ -19,7 +19,7 @@ namespace RxTubesTest
             var messageType = new FixedHeaderMessage()
                 .SetHeaderLength(4)
                 .ParseForMessageLength(bytes => BitConverter.ToInt32(bytes, 0))
-                .SetHeaderFormatter(body =>
+                .WriteOutputHeader(body =>
                 {
                     var header = BitConverter.GetBytes(body.Length + 4);
                     return header.Concat(body).ToArray();
@@ -40,7 +40,7 @@ namespace RxTubesTest
                 })
                 .Subscribe();
 
-            var client = new ReactiveClient("127.0.0.1", 5000, messageType);
+            var client = new ReactiveClient(localIP, 5000, messageType);
 
             var pingBody = Encoding.ASCII.GetBytes("ping");
 
@@ -68,7 +68,7 @@ namespace RxTubesTest
                 .SelectMany(connection => connection.WhenMessage.SelectMany(_ => connection.SendObservableBytes(Encoding.ASCII.GetBytes("pong\r"))))
                 .Subscribe();
 
-            var client = new ReactiveClient("127.0.0.1", 5000, messageType);
+            var client = new ReactiveClient(localIP, 5000, messageType);
             var whenClientSends = client.SendObservableBytes(Encoding.ASCII.GetBytes("ping\r"))
                 .SelectMany(Observable.Never);
 

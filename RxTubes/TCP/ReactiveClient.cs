@@ -1,4 +1,5 @@
 ﻿using RxTubes.MessageTypes;
+using System.Net;
 using System.Net.Sockets;
 
 namespace RxTubes.TCP
@@ -8,6 +9,11 @@ namespace RxTubes.TCP
         public ReactiveClient(string host, int port, IMessageType messageType) : base(new TcpClient(host, port), messageType)
         {
             
+        }
+
+        public ReactiveClient(IPAddress host, int port, IMessageType messageType) : base(new TcpClient(host.ToString(), port), messageType)
+        {
+
         }
     }
 }
