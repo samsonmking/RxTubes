@@ -57,7 +57,7 @@ namespace RxTubesTest
         }
 
         [TestMethod]
-        public async Task TestSingleClientServerTerminatorPingPong()
+        public async Task TestSingleClientServerTerminatorPingPongSendBytes()
         {
             var messageType = new TerminatorMessage()
                 .SetMessageTerminator('\r');
@@ -71,6 +71,29 @@ namespace RxTubesTest
             var client = new ReactiveClient(localIP, 5000, messageType);
             var whenClientSends = client.SendObservableBytes(Encoding.ASCII.GetBytes("ping"))
                 .SelectMany(Observable.Never);
+
+            var reply = await whenClientSends.Merge(client.WhenMessage)
+                .Select(bytes => Encoding.ASCII.GetString(bytes).Trim())
+                .FirstOrDefaultAsync();
+
+            Assert.AreEqual(reply, "pong");
+        }
+
+        [TestMethod]
+        public async Task TestSingleClientServerTerminatorPingPongSendString()
+        {
+            var messageType = new TerminatorMessage()
+                .SetMessageTerminator('\r');
+            var localIP = IPAddress.Parse("127.0.0.1");
+            var server = new ReactiveListener(localIP, 5000, messageType);
+
+            server.Connections
+                .SelectMany(connection => connection.WhenMessage.SelectMany(_ => connection.SendObservableString("pong", Encoding.ASCII)))
+                .Subscribe();
+
+            var client = new ReactiveClient(localIP, 5000, messageType);
+            var whenClientSends = client.SendObservableString("ping", Encoding.ASCII)
+                .SelectMany(Observable.Never<byte[]>());
 
             var reply = await whenClientSends.Merge(client.WhenMessage)
                 .Select(bytes => Encoding.ASCII.GetString(bytes).Trim())
