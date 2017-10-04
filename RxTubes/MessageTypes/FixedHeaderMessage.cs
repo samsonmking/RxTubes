@@ -26,7 +26,7 @@ namespace RxTubes.MessageTypes
             return this;
         }
 
-        public FixedHeaderMessage SetHeaderFormatter(Func<byte[], byte[]> headerFormatter)
+        public FixedHeaderMessage WriteOutputHeader(Func<byte[], byte[]> headerFormatter)
         {
             _headerFormatter = headerFormatter;
             return this;
