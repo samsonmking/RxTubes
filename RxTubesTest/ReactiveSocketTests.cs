@@ -14,7 +14,7 @@ namespace RxTubesTest
     public class ReactiveSocketTests
     {
         [TestMethod]
-        public async Task TestSingleClientServerPingPong()
+        public async Task TestSingleClientServerFixedHeaderPingPong()
         {
             var messageType = new FixedHeaderMessage()
                 .SetHeaderLength(4)
@@ -52,6 +52,29 @@ namespace RxTubesTest
                 })
                 .FirstOrDefaultAsync();
             Assert.AreEqual(reply, "pong");
+        }
+
+        [TestMethod]
+        public async Task TestSingleClientServerTerminatorPingPong()
+        {
+            var messageType = new TerminatorMessage()
+                .SetMessageTerminator('\r');
+            var localIP = IPAddress.Parse("127.0.0.1");
+            var server = new ReactiveListener(localIP, 5000, messageType);
+
+            server.Connections
+                .SelectMany(connection => connection.WhenMessage.SelectMany(_ => connection.SendObservableBytes(Encoding.ASCII.GetBytes("pong\r"))))
+                .Subscribe();
+
+            var client = new ReactiveClient("127.0.0.1", 5000, messageType);
+            var whenClientSends = client.SendObservableBytes(Encoding.ASCII.GetBytes("ping\r"))
+                .SelectMany(Observable.Never);
+
+            var reply = await whenClientSends.Merge(client.WhenMessage)
+                .Select(bytes => Encoding.ASCII.GetString(bytes))
+                .FirstOrDefaultAsync();
+
+            Assert.AreEqual(reply, "pong\r");
         }
     }
 }
