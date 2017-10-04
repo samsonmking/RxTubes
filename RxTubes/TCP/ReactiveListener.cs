@@ -9,7 +9,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RxTubes
+namespace RxTubes.TCP
 {
     public class ReactiveListener : IDisposable
     {

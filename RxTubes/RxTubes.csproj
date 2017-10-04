@@ -60,10 +60,11 @@
     <Compile Include="MessageTypes\FixedHeaderMessage.cs" />
     <Compile Include="MessageTypes\IMessageType.cs" />
     <Compile Include="MessageTypes\TerminatorMessage.cs" />
-    <Compile Include="ReactiveClient.cs" />
-    <Compile Include="ReactiveSocket.cs" />
+    <Compile Include="TCP\ReactiveClient.cs" />
+    <Compile Include="ReactiveSocketBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReactiveListener.cs" />
+    <Compile Include="TCP\ReactiveListener.cs" />
+    <Compile Include="TCP\ReactiveSocket.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

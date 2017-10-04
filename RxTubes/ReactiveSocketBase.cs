@@ -12,16 +12,14 @@ using System.Threading.Tasks;
 
 namespace RxTubes
 {
-    public class ReactiveSocket : IDisposable
+    public abstract class ReactiveSocketBase : IDisposable
     {
-        private TcpClient _client;
         IMessageType _messageType;
         private IObservable<byte[]> _messages;
         private IConnectableObservable<byte[]> _messagesConnectable;
 
-        public ReactiveSocket(TcpClient client, IMessageType messageType)
+        public ReactiveSocketBase(IMessageType messageType)
         {
-            _client = client;
             _messageType = messageType;
         }
 
@@ -54,7 +52,7 @@ namespace RxTubes
         {
             return Observable.Create<IObservable<byte[]>>(o =>
             {
-                if (!_client.Connected) o.OnError(new Exception("Failed to connect to host"));
+                if (!IsConnected()) o.OnError(new Exception("Failed to connect to host"));
                 var stream = GetStream();
                 o.OnNext(Observable.FromAsync(async () => await _messageType.GetMessageAsync(stream)).Repeat());
                 return Disposable.Create(this.Dispose);
@@ -97,16 +95,17 @@ namespace RxTubes
             await stream.WriteAsync(msgAsBytes, 0, msgAsBytes.Length);
         }
 
-        protected virtual Stream GetStream()
-        {
-            return _client.GetStream();
-        }
+        protected abstract bool IsConnected();
 
-        public void Dispose()
+        protected abstract Stream GetStream();
+
+        protected abstract void Close();
+
+        public virtual void Dispose()
         {
-            if (_client.Connected)
+            if (IsConnected())
             {
-                _client.Close();
+                Close();
             }
         }
     }

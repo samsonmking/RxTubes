@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RxTubes
+namespace RxTubes.TCP
 {
     public class ReactiveClient : ReactiveSocket
     {
