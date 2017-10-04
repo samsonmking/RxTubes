@@ -11,6 +11,7 @@ namespace RxTubes.MessageTypes
     {
         private int _headerLength;
         private Func<byte[], int> _parser;
+        private Func<byte[], byte[]> _headerFormatter;
 
         public async Task<byte[]> GetMessageAsync(Stream stream)
         {
@@ -28,10 +29,21 @@ namespace RxTubes.MessageTypes
             return this;
         }
 
+        public FixedHeaderMessage SetHeaderFormatter(Func<byte[], byte[]> headerFormatter)
+        {
+            _headerFormatter = headerFormatter;
+            return this;
+        }
+
         public FixedHeaderMessage ParseForMessageLength(Func<byte[], int> parser)
         {
             _parser = parser;
             return this;
+        }
+
+        public byte[] FormatOutput(byte[] payload)
+        {
+            return _headerFormatter(payload);
         }
     }
 }

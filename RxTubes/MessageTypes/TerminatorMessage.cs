@@ -13,6 +13,11 @@ namespace RxTubes.MessageTypes
 
         public char MessageTerminator { get; set; }
 
+        public byte[] FormatOutput(byte[] payload)
+        {
+            return payload.Concat(BitConverter.GetBytes(MessageTerminator)).ToArray();
+        }
+
         public async Task<byte[]> GetMessageAsync(Stream stream)
         {
             var buffer = new byte[BufferSize];
@@ -32,6 +37,12 @@ namespace RxTubes.MessageTypes
         public TerminatorMessage SetMessageTerminator(char terminator)
         {
             MessageTerminator = terminator;
+            return this;
+        }
+
+        public TerminatorMessage SetBufferSize(int bufferSize)
+        {
+            BufferSize = bufferSize;
             return this;
         }
     }

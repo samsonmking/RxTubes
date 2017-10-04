@@ -18,7 +18,13 @@ namespace RxTubesTest
         {
             var messageType = new FixedHeaderMessage()
                 .SetHeaderLength(4)
-                .ParseForMessageLength(bytes => BitConverter.ToInt32(bytes, 0));
+                .ParseForMessageLength(bytes => BitConverter.ToInt32(bytes, 0))
+                .SetHeaderFormatter(body =>
+                {
+                    var header = BitConverter.GetBytes(body.Length + 4);
+                    return header.Concat(body).ToArray();
+                });
+
             var localIP = IPAddress.Parse("127.0.0.1");
             var server = new ReactiveListener(localIP, 5000, messageType);
 
@@ -29,20 +35,16 @@ namespace RxTubesTest
                         .SelectMany(msg =>
                         {
                             var pongBody = Encoding.ASCII.GetBytes("pong");
-                            var pongHeader = BitConverter.GetBytes(pongBody.Length + 4);
-                            var pongPayload = pongHeader.Concat(pongBody).ToArray();
-                            return connection.SendObservableBytes(pongPayload);
+                            return connection.SendObservableBytes(pongBody);
                         });
                 })
                 .Subscribe();
 
             var client = new ReactiveClient("127.0.0.1", 5000, messageType);
 
-            var body = Encoding.ASCII.GetBytes("ping");
-            var header = BitConverter.GetBytes(body.Length);
-            var payload = header.Concat(body).ToArray();
+            var pingBody = Encoding.ASCII.GetBytes("ping");
 
-            var whenClientSends = client.SendObservableBytes(payload)
+            var whenClientSends = client.SendObservableBytes(pingBody)
                 .SelectMany(Observable.Never);
 
             var reply = await whenClientSends.Merge(client.WhenMessage)

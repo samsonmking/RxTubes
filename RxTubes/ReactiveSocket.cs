@@ -71,8 +71,9 @@ namespace RxTubes
             var stream = GetStream();
             return Observable.FromAsync(async () =>
             {
-                await stream.WriteAsync(payload, 0, payload.Length);
-                return payload;
+                var formattedPayload = _messageType.FormatOutput(payload);
+                await stream.WriteAsync(formattedPayload, 0, formattedPayload.Length);
+                return formattedPayload;
             });
         }
 
