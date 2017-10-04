@@ -54,10 +54,8 @@ namespace RxTubes
 
         private IObservable<byte[]> GetWhenMessage()
         {
-            return Observable.Create<IObservable<byte[]>>(async o =>
+            return Observable.Create<IObservable<byte[]>>(o =>
             {
-                //if (_client.Connected) o.OnError(new Exception("Connection already in use"));
-                //await _client.ConnectAsync(_host, _port);
                 if (!_client.Connected) o.OnError(new Exception("Failed to connect to host"));
                 var stream = GetStream();
                 o.OnNext(Observable.FromAsync(async () => await _messageType.GetMessageAsync(stream)).Repeat());
