@@ -14,8 +14,6 @@ namespace RxTubes
 {
     public class ReactiveSocket : IDisposable
     {
-        private string _host;
-        private int _port;
         private TcpClient _client;
         IMessageType _messageType;
         private IObservable<byte[]> _messages;
