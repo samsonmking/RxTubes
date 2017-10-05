@@ -63,20 +63,19 @@ namespace RxTubes
             var stream = GetStream();
             return Observable.FromAsync(async () =>
             {
-                var formattedPayload = _messageType.FormatOutput(payload);
+                var formattedPayload = _messageType.FormatOutputByte(payload);
                 await stream.WriteAsync(formattedPayload, 0, formattedPayload.Length);
                 return formattedPayload;
             });
         }
 
-        public IObservable<string> SendObservableString(string msg, Encoding encoding)
+        public IObservable<string> SendObservableString(string msg)
         {
             var stream = GetStream();
-            var msgAsBytes = encoding.GetBytes(msg);
-            var formattedPayload = _messageType.FormatOutput(msgAsBytes);
+            var msgAsBytes = _messageType.FormatOutputString(msg);
             return Observable.FromAsync(async () =>
             {
-                await stream.WriteAsync(formattedPayload, 0, formattedPayload.Length);
+                await stream.WriteAsync(msgAsBytes, 0, msgAsBytes.Length);
                 return msg;
             });
         }
@@ -87,10 +86,10 @@ namespace RxTubes
             await stream.WriteAsync(payload, 0, payload.Length);
         }
 
-        public async Task SendStringAsync(string msg, Encoding encoding)
+        public async Task SendStringAsync(string msg)
         {
             var stream = GetStream();
-            var msgAsBytes = encoding.GetBytes(msg);
+            var msgAsBytes = _messageType.FormatOutputString(msg);
             await stream.WriteAsync(msgAsBytes, 0, msgAsBytes.Length);
         }
 

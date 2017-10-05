@@ -9,34 +9,23 @@ namespace RxTubes.MessageTypes
 {
     public class TerminatorMessage : IMessageType
     {
+
+        // Config
         public int BufferSize { get; set; } = 8192;
 
-        public char MessageTerminator { get; set; }
+        public string MessageTerminator { get; set; } = Environment.NewLine;
 
-        public byte[] FormatOutput(byte[] payload)
-        {
-            return payload.Concat(BitConverter.GetBytes(MessageTerminator)).ToArray();
-        }
+        public Encoding Encoding { get; set; } = Encoding.ASCII;
 
-        public async Task<byte[]> GetMessageAsync(Stream stream)
-        {
-            var buffer = new byte[BufferSize];
-            var i = 0;
-            byte lastRead = 0;
-            while(lastRead != MessageTerminator)
-            {
-                await stream.ReadAsync(buffer, i, 1);
-                lastRead = buffer[i];
-                i++;
-            }
-            var result = new byte[i];
-            Array.Copy(buffer, result, i);
-            return result;
-        }
-
-        public TerminatorMessage SetMessageTerminator(char terminator)
+        public TerminatorMessage SetMessageTerminator(string terminator)
         {
             MessageTerminator = terminator;
+            return this;
+        }
+
+        public TerminatorMessage SetEncoding(Encoding encoding)
+        {
+            Encoding = encoding;
             return this;
         }
 
@@ -44,6 +33,35 @@ namespace RxTubes.MessageTypes
         {
             BufferSize = bufferSize;
             return this;
+        }
+
+        // Interface Members
+        public byte[] FormatOutputByte(byte[] payload)
+        {
+            return payload.Concat(Encoding.GetBytes(MessageTerminator)).ToArray();
+        }
+
+        public byte[] FormatOutputString(string payload)
+        {
+            return Encoding.ASCII.GetBytes(payload + MessageTerminator);
+        }
+
+        public async Task<byte[]> GetMessageAsync(Stream stream)
+        {
+            var buffer = new byte[BufferSize];
+            var i = 0;
+            while (true)
+            {
+                var bytesRead = await stream.ReadAsync(buffer, i, 1);
+                if (bytesRead == 0) break;
+                i++;
+                var readBytes = new byte[i];
+                Array.Copy(buffer, readBytes, i);
+                if (Encoding.GetString(readBytes).EndsWith(MessageTerminator)) break;
+            }
+            var result = new byte[i];
+            Array.Copy(buffer, result, i);
+            return result;
         }
     }
 }

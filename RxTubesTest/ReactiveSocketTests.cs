@@ -18,8 +18,8 @@ namespace RxTubesTest
         {
             var messageType = new FixedHeaderMessage()
                 .SetHeaderLength(4)
-                .ParseForMessageLength(bytes => BitConverter.ToInt32(bytes, 0))
-                .WriteOutputHeader(body =>
+                .SetupMessageLengthParser(bytes => BitConverter.ToInt32(bytes, 0))
+                .SetupOutputBytesWriter(body =>
                 {
                     var header = BitConverter.GetBytes(body.Length + 4);
                     return header.Concat(body).ToArray();
@@ -60,7 +60,7 @@ namespace RxTubesTest
         public async Task TestSingleClientServerTerminatorPingPongSendBytes()
         {
             var messageType = new TerminatorMessage()
-                .SetMessageTerminator('\r');
+                .SetMessageTerminator(Environment.NewLine);
             var localIP = IPAddress.Parse("127.0.0.1");
             var server = new ReactiveListener(localIP, 5000, messageType);
 
@@ -83,16 +83,16 @@ namespace RxTubesTest
         public async Task TestSingleClientServerTerminatorPingPongSendString()
         {
             var messageType = new TerminatorMessage()
-                .SetMessageTerminator('\r');
+                .SetMessageTerminator(Environment.NewLine);
             var localIP = IPAddress.Parse("127.0.0.1");
             var server = new ReactiveListener(localIP, 5000, messageType);
 
             server.Connections
-                .SelectMany(connection => connection.WhenMessage.SelectMany(_ => connection.SendObservableString("pong", Encoding.ASCII)))
+                .SelectMany(connection => connection.WhenMessage.SelectMany(_ => connection.SendObservableString("pong")))
                 .Subscribe();
 
             var client = new ReactiveClient(localIP, 5000, messageType);
-            var whenClientSends = client.SendObservableString("ping", Encoding.ASCII)
+            var whenClientSends = client.SendObservableString("ping")
                 .SelectMany(Observable.Never<byte[]>());
 
             var reply = await whenClientSends.Merge(client.WhenMessage)

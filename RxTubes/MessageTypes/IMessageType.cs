@@ -6,6 +6,7 @@ namespace RxTubes.MessageTypes
     public interface IMessageType
     {
         Task<byte[]> GetMessageAsync(Stream stream);
-        byte[] FormatOutput(byte[] payload);
+        byte[] FormatOutputByte(byte[] payload);
+        byte[] FormatOutputString(string payload);
     }
 }
