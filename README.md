@@ -1,7 +1,7 @@
 # RxTubes
 Simple library providing sockets API based on IObservable.
 
-```
+```C#
 var anExampleMessage = new FixedHeaderMessage()
 	.SetHeaderLength(4)
 	.ParseForMessageLength(header => BitConverter.ToInt32(header, 0));
